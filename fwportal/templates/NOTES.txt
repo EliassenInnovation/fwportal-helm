@@ -1,0 +1,16 @@
+fwportal has been deployed.
+
+  Release:   {{ .Release.Name }}
+  Namespace: {{ .Release.Namespace }}
+  Image:     {{ include "fwportal.image" . }}
+  Replicas:  {{ .Values.replicaCount }}
+
+To check the StatefulSet status:
+
+  kubectl get statefulset -n {{ .Release.Namespace }} {{ include "fwportal.fullname" . }}
+
+To access the service within the cluster:
+
+  kubectl port-forward svc/{{ include "fwportal.fullname" . }} -n {{ .Release.Namespace }} 8080:{{ .Values.service.port }}
+
+Then open: http://localhost:8080

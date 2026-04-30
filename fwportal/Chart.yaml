@@ -1,0 +1,28 @@
+apiVersion: v2
+name: fwportal
+description: Helm chart for deploying fwportal as a StatefulSet
+type: application
+version: 1.0.0
+appVersion: "2.13.11"
+
+# Ownership
+home: https://www.eliassen.com
+sources:
+  - https://www.eliassen.com
+
+maintainers:
+  - name: Eliassen Group
+    email: support@eliassen.com
+    url: https://www.eliassen.com
+
+annotations:
+  # Proprietary and confidential — all rights reserved.
+  # This Helm chart and its contents are the exclusive property of Eliassen Group.
+  # Unauthorized copying, distribution, modification, or use of this software,
+  # in whole or in part, is strictly prohibited without prior written consent
+  # from Eliassen Group.
+  #
+  # For licensing inquiries contact: support@eliassen.com
+  license: "Proprietary"
+  org.eliassengroup.owner: "Eliassen Group"
+  org.eliassengroup.contact: "support@eliassen.com"

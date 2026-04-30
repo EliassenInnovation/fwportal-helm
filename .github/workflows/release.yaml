@@ -1,0 +1,75 @@
+name: Release Helm Chart
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Get chart version
+        id: chart
+        run: echo "version=$(grep '^version:' fwportal/Chart.yaml | awk '{print $2}')" >> $GITHUB_OUTPUT
+
+      - name: Check if release already exists
+        id: check
+        run: |
+          if gh release view "fwportal-${{ steps.chart.outputs.version }}" --repo "$GITHUB_REPOSITORY" &>/dev/null; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Release fwportal-${{ steps.chart.outputs.version }} already exists — skipping."
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Package chart
+        if: steps.check.outputs.skip == 'false'
+        run: helm package fwportal/
+
+      - name: Create GitHub release
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          gh release create "fwportal-${{ steps.chart.outputs.version }}" \
+            --title "fwportal ${{ steps.chart.outputs.version }}" \
+            --notes "Helm chart release v${{ steps.chart.outputs.version }}" \
+            "fwportal-${{ steps.chart.outputs.version }}.tgz"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update index.yaml
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          VERSION="${{ steps.chart.outputs.version }}"
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/fwportal-${VERSION}"
+          mkdir -p .packages
+          cp "fwportal-${VERSION}.tgz" .packages/
+          if [ -f index.yaml ]; then
+            helm repo index .packages/ --url "$URL" --merge index.yaml
+          else
+            helm repo index .packages/ --url "$URL"
+          fi
+          cp .packages/index.yaml index.yaml
+          git add index.yaml
+          git commit -m "Update index.yaml for fwportal ${VERSION}"
+          git push origin main

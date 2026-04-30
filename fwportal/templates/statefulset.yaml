@@ -1,0 +1,185 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "fwportal.fullname" . }}
+  labels:
+    {{- include "fwportal.labels" . | nindent 4 }}
+  {{- with .Values.statefulsetAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ .Values.persistence.retentionPolicy.whenDeleted }}
+    whenScaled: {{ .Values.persistence.retentionPolicy.whenScaled }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "fwportal.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "fwportal.fullname" . }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "fwportal.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "fwportal.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ include "fwportal.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: fwportal
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.httpGet.path }}
+              port: {{ .Values.service.targetPort }}
+              scheme: {{ .Values.readinessProbe.httpGet.scheme }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: application-config
+              mountPath: /app/config/application.properties
+              subPath: application.properties
+              readOnly: true
+            - name: portal-key
+              mountPath: /app/config/portal.key
+              subPath: portal.key
+              readOnly: true
+            - name: framework-key
+              mountPath: /app/config/framework.key
+              subPath: framework.key
+              readOnly: true
+            - name: lw-license
+              mountPath: /app/config/customer_LW_license.properties
+              subPath: customer_LW_license.properties
+              readOnly: true
+            {{- if or .Values.tlsCert.secretName .Values.dbCert.secretName .Values.truststore.secretName }}
+            - name: tls-certs
+              mountPath: /app/config/tls
+              readOnly: true
+            {{- end }}
+            {{- if .Values.documents.claimName }}
+            - name: documents
+              mountPath: {{ .Values.documents.mountPath }}
+            {{- end }}
+            {{- if .Values.archive.claimName }}
+            - name: archive
+              mountPath: {{ .Values.archive.mountPath }}
+            {{- end }}
+            {{- if or .Values.extraFiles.configMaps .Values.extraFiles.secrets }}
+            - name: extra-files
+              mountPath: /app/extra
+              readOnly: true
+            {{- end }}
+            {{- range .Values.extraFiles.volumes }}
+            - name: {{ .name }}
+              mountPath: /app/extra/{{ .name }}
+            {{- end }}
+      volumes:
+        - name: application-config
+          configMap:
+            name: {{ .Values.applicationConfig.configMapName }}
+        - name: portal-key
+          secret:
+            secretName: {{ .Values.portalKey.secretName }}
+        - name: framework-key
+          secret:
+            secretName: {{ .Values.frameworkKey.secretName }}
+        - name: lw-license
+          secret:
+            secretName: {{ .Values.lwLicense.secretName }}
+        {{- if or .Values.tlsCert.secretName .Values.dbCert.secretName .Values.truststore.secretName }}
+        - name: tls-certs
+          projected:
+            defaultMode: 0644
+            sources:
+            {{- if .Values.tlsCert.secretName }}
+            - secret:
+                name: {{ .Values.tlsCert.secretName }}
+            {{- end }}
+            {{- if .Values.dbCert.secretName }}
+            - secret:
+                name: {{ .Values.dbCert.secretName }}
+            {{- end }}
+            {{- if .Values.truststore.secretName }}
+            - secret:
+                name: {{ .Values.truststore.secretName }}
+            {{- end }}
+        {{- end }}
+        {{- if .Values.documents.claimName }}
+        - name: documents
+          persistentVolumeClaim:
+            claimName: {{ .Values.documents.claimName }}
+        {{- end }}
+        {{- if .Values.archive.claimName }}
+        - name: archive
+          persistentVolumeClaim:
+            claimName: {{ .Values.archive.claimName }}
+        {{- end }}
+        {{- if or .Values.extraFiles.configMaps .Values.extraFiles.secrets }}
+        - name: extra-files
+          projected:
+            defaultMode: 0644
+            sources:
+            {{- range .Values.extraFiles.configMaps }}
+            - configMap:
+                name: {{ .name }}
+            {{- end }}
+            {{- range .Values.extraFiles.secrets }}
+            - secret:
+                name: {{ .name }}
+            {{- end }}
+        {{- end }}
+        {{- range .Values.extraFiles.volumes }}
+        - {{ toYaml . | nindent 10 | trim }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range .Values.topologySpreadConstraints }}
+        - maxSkew: {{ .maxSkew }}
+          topologyKey: {{ .topologyKey }}
+          whenUnsatisfiable: {{ .whenUnsatisfiable }}
+          labelSelector:
+            matchLabels:
+              {{- include "fwportal.selectorLabels" $ | nindent 14 }}
+        {{- end }}
+      {{- end }}

@@ -1,0 +1,141 @@
+# ── Workload ──────────────────────────────────────────────────────────────────
+replicaCount: 1
+
+statefulsetAnnotations: {}
+
+env: []
+# - name: TZ
+#   value: America/Chicago
+
+# ── Image ─────────────────────────────────────────────────────────────────────
+image:
+  registry: docker.io
+  repository: eliassengroup/fwportal
+  tag: ""  # Defaults to .Chart.AppVersion when empty
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+# - name: my-registry-secret
+
+# ── Service Account ───────────────────────────────────────────────────────────
+serviceAccount:
+  create: false
+  name: ""  # If create=false, uses this existing SA name. Falls back to "default" when empty.
+  annotations: {}
+
+# ── Service ───────────────────────────────────────────────────────────────────
+service:
+  type: ClusterIP
+  port: 10680
+  targetPort: 10680
+  annotations: {}
+
+# ── Readiness Probe ───────────────────────────────────────────────────────────
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /portal/login
+    scheme: HTTP  # Set to HTTPS if the container serves TLS directly
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  failureThreshold: 3
+
+# ── Resources ─────────────────────────────────────────────────────────────────
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# ── Config Mounts ─────────────────────────────────────────────────────────────
+applicationConfig:
+  configMapName: application-config
+
+portalKey:
+  secretName: portal-key
+
+frameworkKey:
+  secretName: framework-key
+
+lwLicense:
+  secretName: lw-license
+
+tlsCert:
+  secretName: ""  # Optional — if set, secret keys are projected as files into /app/config/tls/
+
+dbCert:
+  secretName: ""  # Optional — if set, secret keys are projected as files into /app/config/tls/
+
+truststore:
+  secretName: ""  # Optional — if set, secret keys are projected as files into /app/config/tls/
+
+# ── Extra Files ───────────────────────────────────────────────────────────────
+extraFiles:
+  configMaps: []
+  # - name: my-extra-config
+  secrets: []
+  # - name: my-extra-secret
+  volumes: []
+  # - name: my-data
+  #   persistentVolumeClaim:
+  #     claimName: my-pvc
+  # - name: my-scratch
+  #   emptyDir: {}
+
+# ── Storage ───────────────────────────────────────────────────────────────────
+documents:
+  claimName: ""                    # Optional — if set, mounts the pre-existing PVC as the documents volume
+  mountPath: /eliassen/documents   # Must match the directory structure configured in B2Bi
+
+archive:
+  claimName: ""                    # Optional — if set, mounts the pre-existing PVC as the archive volume
+  mountPath: /eliassen/archive     # Must match the directory structure configured in B2Bi
+
+persistence:
+  retentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+
+# ── Ingress ───────────────────────────────────────────────────────────────────
+ingress:
+  enabled: false
+  ingressClassName: ""  # e.g. "nginx", "alb"
+  annotations: {}
+  # kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: fwportal.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  # - secretName: fwportal-tls
+  #   hosts:
+  #     - fwportal.example.com
+
+# ── Scheduling ────────────────────────────────────────────────────────────────
+# labelSelector is automatically set to match this chart's selector labels.
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+
+# ── Advanced ──────────────────────────────────────────────────────────────────
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
