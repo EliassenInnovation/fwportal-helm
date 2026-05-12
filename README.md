@@ -309,7 +309,7 @@ helm install fwportal eliassen/fwportal \
 
 ```bash
 helm install fwportal eliassen/fwportal \
-  --version 1.0.0 \
+  --version 1.1.0 \
   --namespace <your-namespace> \
   -f overrides.yaml
 ```
@@ -326,5 +326,15 @@ helm upgrade fwportal eliassen/fwportal \
 
 ```bash
 helm uninstall fwportal --namespace <your-namespace>
+```
+
+### Install from a downloaded TGZ
+
+If you prefer not to add the Helm repository, chart packages can be downloaded directly from the [Releases page](https://github.com/EliassenInnovation/fwportal-helm/releases) and installed from the local file:
+
+```bash
+helm install fwportal fwportal-1.1.0.tgz \
+  --namespace <your-namespace> \
+  -f overrides.yaml
 ```
 

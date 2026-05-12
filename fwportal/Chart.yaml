@@ -2,8 +2,8 @@ apiVersion: v2
 name: fwportal
 description: Helm chart for deploying fwportal as a StatefulSet
 type: application
-version: 1.0.0
-appVersion: "2.13.11"
+version: 1.1.0
+appVersion: "2.14.0"
 
 # Ownership
 home: https://www.eliassen.com
