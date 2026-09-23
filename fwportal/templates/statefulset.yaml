@@ -39,6 +39,18 @@ spec:
         - name: {{ .Chart.Name }}
           image: {{ include "fwportal.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - java
+          args:
+            {{- if .Values.debug }}
+            - -Dlogging.level.root=TRACE
+            - -Djavax.net.debug=all
+            {{- end }}
+            - -jar
+            - portal-api.jar
+            {{- if .Values.debug }}
+            - --trace
+            {{- end }}
           {{- with .Values.env }}
           env:
             {{- toYaml . | nindent 12 }}

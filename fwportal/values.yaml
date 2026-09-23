@@ -7,6 +7,10 @@ env: []
 # - name: TZ
 #   value: America/Chicago
 
+# ── Debug Mode ────────────────────────────────────────────────────────────────
+debug: false
+# When enabled, runs the container with TRACE logging and SSL debug enabled
+
 # ── Image ─────────────────────────────────────────────────────────────────────
 image:
   registry: docker.io

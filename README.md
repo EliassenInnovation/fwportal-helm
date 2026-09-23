@@ -164,6 +164,7 @@ The following values can be overridden in `overrides.yaml` or via `--set`.
 | `replicaCount` | `1` | Number of StatefulSet replicas |
 | `statefulsetAnnotations` | `{}` | Annotations added to the StatefulSet resource itself |
 | `env` | `[]` | Environment variables injected into the container (standard `name`/`value` list) |
+| `debug` | `false` | When `true`, runs with TRACE logging and SSL debug enabled (`-Dlogging.level.root=TRACE -Djavax.net.debug=all --trace`) |
 | **Image** | | |
 | `image.registry` | `docker.io` | Container registry |
 | `image.repository` | `eliassengroup/fwportal` | Image repository |
