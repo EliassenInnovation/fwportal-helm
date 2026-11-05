@@ -184,10 +184,10 @@ The following values can be overridden in `overrides.yaml` or via `--set`.
 | `readinessProbe.enabled` | `true` | Set to `false` to disable the readiness probe entirely |
 | `readinessProbe.httpGet.scheme` | `HTTP` | Set to `HTTPS` if the container serves TLS directly |
 | **Resources** | | |
-| `resources.requests.cpu` | `250m` | CPU request |
-| `resources.requests.memory` | `256Mi` | Memory request |
-| `resources.limits.cpu` | `500m` | CPU limit |
-| `resources.limits.memory` | `512Mi` | Memory limit |
+| `resources.requests.cpu` | `500m` | CPU request |
+| `resources.requests.memory` | `512Mi` | Memory request |
+| `resources.limits.cpu` | `4000m` | CPU limit |
+| `resources.limits.memory` | `4096Mi` | Memory limit |
 | **Config Mounts** | | |
 | `applicationConfig.configMapName` | `application-config` | ConfigMap name for `application.properties` |
 | `portalKey.secretName` | `portal-key` | Secret name for `portal.key` |
