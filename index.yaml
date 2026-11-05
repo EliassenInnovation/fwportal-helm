@@ -7,6 +7,27 @@ entries:
       org.eliassengroup.owner: Eliassen Group
     apiVersion: v2
     appVersion: 2.14.0
+    created: "2026-11-05T22:40:00.976174836Z"
+    description: Helm chart for deploying fwportal as a StatefulSet
+    digest: 3cad736da211aea8c07e97cae35d4e669520174b9f172fc14113f713cad6bb0b
+    home: https://www.eliassen.com
+    maintainers:
+    - email: support@eliassen.com
+      name: Eliassen Group
+      url: https://www.eliassen.com
+    name: fwportal
+    sources:
+    - https://www.eliassen.com
+    type: application
+    urls:
+    - https://github.com/EliassenInnovation/fwportal-helm/releases/download/fwportal-1.1.2/fwportal-1.1.2.tgz
+    version: 1.1.2
+  - annotations:
+      license: Proprietary
+      org.eliassengroup.contact: support@eliassen.com
+      org.eliassengroup.owner: Eliassen Group
+    apiVersion: v2
+    appVersion: 2.14.0
     created: "2026-09-23T16:04:48.470513588Z"
     description: Helm chart for deploying fwportal as a StatefulSet
     digest: ed44197a13d1aa39f51ce749674e95ee13b465d7dfccbf65f0d68368d927ce59
@@ -64,4 +85,4 @@ entries:
     urls:
     - https://github.com/EliassenInnovation/fwportal-helm/releases/download/fwportal-1.0.0/fwportal-1.0.0.tgz
     version: 1.0.0
-generated: "2026-09-23T16:04:48.469789635Z"
+generated: "2026-11-05T22:40:00.975494733Z"
